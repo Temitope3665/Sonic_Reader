@@ -26,3 +26,11 @@ export interface PDFItem {
 export interface TextContentItem {
   items: PDFItem[];
 }
+
+export interface IAppContext {
+  balance: number;
+}
+
+export interface AppProviderProps {
+  children: ReactNode;
+}

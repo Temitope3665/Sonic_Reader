@@ -1,9 +1,10 @@
 import localFont from 'next/font/local';
 import React from 'react';
 import { cn } from '../lib/utils';
-import Navbar from '@/components/navbar';
 import '@/styles/globals.css';
-// import { Toast } from '@/components/ui/use-toast';
+import AppWalletProvider from '@/context/app-wallet-provider';
+import { AppProvider } from '@/context/app-context';
+import { Toaster } from '@/components/ui/toaster';
 
 const gilroyFont = localFont({
   variable: '--font-sans',
@@ -69,9 +70,10 @@ export default function RootLayout({ children }) {
         <title>Convert PDF Document to Speech web app</title>
       </head>
       <body className={cn('font-sans', gilroyFont.variable)}>
-        <Navbar />
-        <div className="pt-[60px]">{children}</div>
-        {/* <Toaster /> */}
+        <AppWalletProvider>
+          <AppProvider>{children}</AppProvider>
+        </AppWalletProvider>
+        <Toaster />
       </body>
     </html>
   );
