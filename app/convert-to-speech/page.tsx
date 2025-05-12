@@ -24,7 +24,7 @@ import { Slider } from '@/components/ui/slider';
 import SelectComp from '@/components/select-comp';
 import { speechConfig } from '@/lib/utils';
 import { toast, useToast } from '@/hooks/use-toast';
-import { FileAudio, FilePlus2, FileText, Pause, Play } from 'lucide-react';
+import { ChevronDown, FileAudio, FilePlus2, FileText, Pause, Play } from 'lucide-react';
 import { recentDocuments } from '@/config/library';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -47,6 +47,8 @@ export default function Home() {
   const [overallTexts, setOverallTexts] = useState<string[]>([]);
   const speech = typeof window !== 'undefined' && new Speech();
   const [loading, setLoading] = useState(false);
+  const savedPdfs = typeof window !== 'undefined' && localStorage.getItem('sonic_reader_pdfs');
+  const initialPdfs = savedPdfs ? JSON.parse(savedPdfs) : [];
 
   const handleReadPdf = async (pdfData: Uint8Array) => {
     const pdf = await pdfjs.getDocument({ data: new Uint8Array(pdfData) }).promise; // Fresh copy here too
@@ -168,18 +170,49 @@ export default function Home() {
     });
   };
 
+  const handleSavePdf = () => {
+    if (uploadedFile && pdfData) {
+      try {
+        const blob = new Blob([pdfData], { type: 'application/pdf' });
+        const dataUrl = URL.createObjectURL(blob);
+
+        const pdfInfo = {
+          name: uploadedFile.name,
+          dataUrl,
+          date: new Date().toISOString(),
+          status: 'Pause',
+        };
+        if (savedPdfs) {
+          localStorage.setItem('sonic_reader_pdfs', JSON.stringify([...JSON.parse(savedPdfs), pdfInfo]));
+        } else {
+          localStorage.setItem('sonic_reader_pdfs', JSON.stringify([pdfInfo]));
+        }
+        toast({
+          title: 'Success',
+          description: 'PDF saved successfully',
+        });
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to save PDF. File might be too large.',
+        });
+      }
+    }
+  };
+
   return (
     <main className="flex overflow-hidden gap-12 pt-6 h-full">
       <div className="w-[30%] bg-[#F7F8F3] pl-12 pr-4 py-4 min-h-screen space-y-4 overflow-y-auto">
         <h1 className="font-light mt-4">Recent Documents</h1>
 
         <div className="space-y-2">
-          {recentDocuments.map((each) => (
+          {initialPdfs.map((each) => (
             <div className="border rounded-lg p-4 flex justify-between bg-white hover:bg-none" key={each.title}>
               <div className="flex space-x-2 items-start">
                 <FileText size={18} className="mt-1" />
                 <div>
-                  <p className="text-sm font-bold">{each.title}</p>
+                  <p className="text-sm font-bold capitalize">{each.name}</p>
                   <p className="text-xs text-slate-700 font-light">{each.date}</p>
                 </div>
               </div>
@@ -203,12 +236,20 @@ export default function Home() {
             )}
             <p>Upload PDFs and convert them to audio:</p>
           </div>
-          <Button className="rounded-full" onClick={() => setOpen(true)}>
-            <div className="flex space-x-2">
-              <FilePlus2 size={16} />
-              <p className="text-sm">Upload new pdf</p>
-            </div>
-          </Button>
+          <div className="flex space-x-4">
+            {pdfData && (
+              <Button variant="outline" className="rounded-full" onClick={handleSavePdf}>
+                Save File
+              </Button>
+            )}
+
+            <Button className="rounded-full" onClick={() => setOpen(true)}>
+              <div className="flex space-x-2">
+                <FilePlus2 size={16} />
+                <p className="text-sm">Upload new pdf</p>
+              </div>
+            </Button>
+          </div>
         </div>
 
         <div className="border rounded-lg h-[75vh]">
@@ -277,39 +318,8 @@ export default function Home() {
               </div>
               <div className="text-center w-[60%]">
                 {pdfData && (
-                  <div className="w-full">
-                    {/* <div className="border rounded-md px-4 py-2 my-4">
-                      <p className="text-sm text-left font-semibold md:text-normal">What pages do you want to listen to today?</p>
-                      <div className="flex items-center py-2 justify-between">
-                        <div className="text-left w-[15%]">
-                          <Label className="text-sm">From</Label>
-                          <Input
-                            type="number"
-                            placeholder="From"
-                            value={from}
-                            className="text-base"
-                            readOnly={totalPdfPage === from}
-                            min="1"
-                            onChange={handleChangeNumber}
-                          />
-                        </div>
-                        <p className="mt-2">-</p>
-                        <div className="text-left w-[15%]">
-                          <Label className="text-sm">To</Label>
-                          <Input
-                            type="number"
-                            placeholder="To"
-                            readOnly={totalPdfPage === to}
-                            value={to}
-                            min="1"
-                            className="text-base"
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTo(Number(e.target.value))}
-                          />
-                        </div>
-                      </div>
-                    </div> */}
-
-                    <div className="flex w-full justify-between border rounded-md p-4 my-4">
+                  <div className="w-full mt-4">
+                    <div className="flex w-full justify-between border rounded-md p-4">
                       <div className="text-left w-[28%]">
                         <Label className="my-2 font-medium">Rate: {rate}</Label>
                         <Slider className="mt-2" max={2} step={0.1} defaultValue={[rate]} onValueChange={(value: any) => setRate(value.toString())} />
