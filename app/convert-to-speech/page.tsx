@@ -7,6 +7,7 @@ import 'pdfjs-dist/build/pdf.worker.entry';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Speech from 'speak-tts';
+import { v4 as uuidv4 } from 'uuid';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -23,12 +24,13 @@ import {
 import { Slider } from '@/components/ui/slider';
 import SelectComp from '@/components/select-comp';
 import { speechConfig } from '@/lib/utils';
-import { toast, useToast } from '@/hooks/use-toast';
-import { ChevronDown, FileAudio, FilePlus2, FileText, Pause, Play } from 'lucide-react';
-import { recentDocuments } from '@/config/library';
+import { toast } from '@/hooks/use-toast';
+import { FileAudio, FilePlus2, FileText, Pause, Play } from 'lucide-react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import FileUpload from '@/components/ui/file-upload';
+import { ErrorIcon } from '@/assets/svg';
+import { unlockAndMintNFT } from '@/config/mint-nft';
 
 export default function Home() {
   const { publicKey } = useWallet();
@@ -41,14 +43,15 @@ export default function Home() {
   const [volume, setVolume] = useState(1);
   const [pdfData, setPdfData] = useState<any>(null);
   const [selectedVoice, setSelectedVoice] = useState(undefined);
+  const [initialPdfs, setInitialPdfs] = useState<any>([]);
   const [text, setText] = useState('');
+  const [currentPlaying, setCurrentPlaying] = useState<{ data: string; name: string; id: string } | null>(null);
   const [from, setFrom] = useState(1);
   const [to, setTo] = useState(0);
   const [overallTexts, setOverallTexts] = useState<string[]>([]);
   const speech = typeof window !== 'undefined' && new Speech();
   const [loading, setLoading] = useState(false);
   const savedPdfs = typeof window !== 'undefined' && localStorage.getItem('sonic_reader_pdfs');
-  const initialPdfs = savedPdfs ? JSON.parse(savedPdfs) : [];
 
   const handleReadPdf = async (pdfData: Uint8Array) => {
     const pdf = await pdfjs.getDocument({ data: new Uint8Array(pdfData) }).promise; // Fresh copy here too
@@ -94,15 +97,17 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && speech.hasBrowserSupport()) {
-      toast({
-        variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: 'Sorry, browser not supported to use this service',
-      });
+      // toast({
+      //   variant: 'destructive',
+      //   title: 'Uh oh! Something went wrong.',
+      //   description: 'Sorry, browser not supported to use this service',
+      // });
     }
     speech.init(speechConfig(rate, pitch)).then((data) => {
       setAllVoices(data?.voices);
     });
+    const initialPdfs = savedPdfs ? JSON.parse(savedPdfs) : [];
+    setInitialPdfs(initialPdfs);
   }, []);
 
   const handleSpeak = async () => {
@@ -173,25 +178,53 @@ export default function Home() {
   const handleSavePdf = () => {
     if (uploadedFile && pdfData) {
       try {
-        const blob = new Blob([pdfData], { type: 'application/pdf' });
-        const dataUrl = URL.createObjectURL(blob);
+        console.log(uploadedFile, '-uploadedFile');
 
-        const pdfInfo = {
-          name: uploadedFile.name,
-          dataUrl,
-          date: new Date().toISOString(),
-          status: 'Pause',
+        const file: File = uploadedFile;
+
+        const reader = new FileReader();
+
+        reader.onload = function (event: ProgressEvent<FileReader>) {
+          const arrayBuffer: ArrayBuffer = event?.target?.result as ArrayBuffer;
+          const uint8Array: Uint8Array = new Uint8Array(arrayBuffer);
+
+          // Convert to Base64
+          const binaryString: string = String.fromCharCode(...(uint8Array as any));
+          const base64String = btoa(binaryString);
+
+          const pdfInfo = {
+            name: uploadedFile.name,
+            data: base64String,
+            date: new Date().toLocaleString('en-US', {
+              hour: 'numeric',
+              minute: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+              hour12: true,
+            }),
+            status: from < totalPdfPage ? 'In progress' : 'Finish',
+            userAddress: publicKey,
+            id: uuidv4(),
+          };
+          if (savedPdfs) {
+            localStorage.setItem('sonic_reader_pdfs', JSON.stringify([...JSON.parse(savedPdfs), pdfInfo]));
+            setInitialPdfs([...initialPdfs, pdfInfo]);
+          } else {
+            localStorage.setItem('sonic_reader_pdfs', JSON.stringify([pdfInfo]));
+            setInitialPdfs([pdfInfo]);
+          }
         };
-        if (savedPdfs) {
-          localStorage.setItem('sonic_reader_pdfs', JSON.stringify([...JSON.parse(savedPdfs), pdfInfo]));
-        } else {
-          localStorage.setItem('sonic_reader_pdfs', JSON.stringify([pdfInfo]));
-        }
+
+        reader.readAsArrayBuffer(file);
+
         toast({
           title: 'Success',
           description: 'PDF saved successfully',
         });
       } catch (error) {
+        console.log(error, '-> error');
+
         toast({
           variant: 'destructive',
           title: 'Error',
@@ -201,25 +234,65 @@ export default function Home() {
     }
   };
 
+  const handlePlay = async (each: { data: string; name: string; id: string }) => {
+    const binaryString: string = atob(each.data);
+
+    const arrayBuffer: ArrayBuffer = new ArrayBuffer(binaryString.length);
+    const uint8Array: Uint8Array = new Uint8Array(arrayBuffer);
+    for (let i: number = 0; i < binaryString.length; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i);
+    }
+
+    // Create a clone of the ArrayBuffer (as in your example)
+    const bufferCopy: ArrayBuffer = arrayBuffer.slice(0);
+    const typedArray: Uint8Array = new Uint8Array(bufferCopy);
+
+    // Use the typedArray as in your original code
+    setPdfData(typedArray);
+    await handleReadPdf(typedArray);
+    handleSpeak();
+    setCurrentPlaying(each);
+  };
+
+  const handleUpload = () => {
+    const isPaid = localStorage.getItem('isSubscribed');
+    if (!isPaid) {
+      toast({
+        variant: 'destructive',
+        title: 'Subscription Required!',
+        description: 'Please subscribe to continue!',
+      });
+    } else {
+      setOpen(true);
+    }
+  };
+
   return (
     <main className="flex overflow-hidden gap-12 pt-6 h-full">
       <div className="w-[30%] bg-[#F7F8F3] pl-12 pr-4 py-4 min-h-screen space-y-4 overflow-y-auto">
         <h1 className="font-light mt-4">Recent Documents</h1>
 
         <div className="space-y-2">
+          {initialPdfs.length === 0 && (
+            <div className="flex items-center text-sm space-x-1.5">
+              <ErrorIcon />
+              <p className="font-bold">No recent documents saved</p>
+            </div>
+          )}
           {initialPdfs.map((each) => (
             <div className="border rounded-lg p-4 flex justify-between bg-white hover:bg-none" key={each.title}>
               <div className="flex space-x-2 items-start">
                 <FileText size={18} className="mt-1" />
                 <div>
-                  <p className="text-sm font-bold capitalize">{each.name}</p>
+                  <p className="text-sm font-bold capitalize truncate">{each.name}</p>
                   <p className="text-xs text-slate-700 font-light">{each.date}</p>
+                  <p className="text-xs font-light mt-1.5">Mint NFT</p>
                 </div>
               </div>
-              <Button className="rounded-full h-8 px-2" size="sm">
+              <Button className="rounded-full h-8 px-2" size="sm" onClick={() => handlePlay(each)}>
                 <div className="flex space-x-1 items-center">
-                  {each.status === 'Pause' ? <Play size={12} /> : <Pause size={12} />}
-                  <p className="text-xs">{each.status}</p>
+                  {each.id === currentPlaying?.id ? <Pause size={12} /> : <Play size={12} />}
+                  <p className="text-xs">{each.id === currentPlaying?.id ? 'Pause' : 'Play'}</p>
                 </div>
               </Button>
             </div>
@@ -243,7 +316,7 @@ export default function Home() {
               </Button>
             )}
 
-            <Button className="rounded-full" onClick={() => setOpen(true)}>
+            <Button className="rounded-full" onClick={handleUpload}>
               <div className="flex space-x-2">
                 <FilePlus2 size={16} />
                 <p className="text-sm">Upload new pdf</p>
@@ -258,7 +331,7 @@ export default function Home() {
               <div className="text-center space-y-1">
                 <FileAudio className="h-16 w-16 text-muted-foreground mx-auto" />
                 <p className="text-muted-foreground text-center">No file selected</p>
-                <Button className="rounded-full" onClick={() => setOpen(true)}>
+                <Button className="rounded-full" onClick={handleUpload}>
                   <div className="flex space-x-2">
                     <FilePlus2 size={16} />
                     <p className="text-sm">Upload new pdf</p>

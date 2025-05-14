@@ -45,7 +45,7 @@ export default function FileUpload({ setOpen, onFileChange, setUploadedFile, upl
         <Button className="" onClick={() => setOpen(false)} variant="outline">
           Cancel
         </Button>
-        <Button onClick={onFileChange} className="w-full">
+        <Button onClick={onFileChange} className="w-full" disabled={!uploadedFile}>
           Continue
         </Button>
       </div>
