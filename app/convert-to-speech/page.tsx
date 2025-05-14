@@ -268,8 +268,8 @@ export default function Home() {
   };
 
   return (
-    <main className="flex overflow-hidden gap-12 pt-6 h-full">
-      <div className="w-[30%] bg-[#F7F8F3] pl-12 pr-4 py-4 min-h-screen space-y-4 overflow-y-auto">
+    <main className="flex flex-col md:flex-row overflow-hidden gap-4 md:gap-12 pt-6 h-full">
+      <div className="w-full md:w-[30%] bg-[#F7F8F3] px-4 md:pl-12 md:pr-4 py-4 min-h-fit lg:min-h-screen space-y-4 overflow-y-auto">
         <h1 className="font-light mt-4">Recent Documents</h1>
 
         <div className="space-y-2">
@@ -299,8 +299,8 @@ export default function Home() {
           ))}
         </div>
       </div>
-      <div className="w-[70%] pr-8 py-8 space-y-4">
-        <div className="flex justify-between items-start">
+      <div className="w-full md:w-[70%] px-4 md:pr-8 py-8 space-y-4">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 md:gap-0">
           <div className="font-light space-y-1">
             {publicKey && (
               <h1 className="text-sm">
@@ -325,7 +325,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="border rounded-lg h-[75vh]">
+        <div className="border rounded-lg h-full lg:h-[75vh]">
           {!pdfData && (
             <div className="flex items-center justify-center w-full h-full">
               <div className="text-center space-y-1">
@@ -342,11 +342,11 @@ export default function Home() {
           )}
 
           {pdfData && (
-            <div className="w-full flex gap-8 px-10">
-              <div className="w-[40%]">
+            <div className="w-full lg:flex gap-4 px-4 lg:gap-8 lg:px-10">
+              <div className="w-full lg:w-[40%]">
                 {pdfData && (
                   <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-                    <div className="h-[350px] w-full py-4 relative">
+                    <div className="h-full lg:h-[350px] w-full py-4 relative">
                       <Viewer
                         fileUrl={pdfData}
                         onDocumentLoad={(e: any) => {
@@ -361,7 +361,7 @@ export default function Home() {
                 <div className="border rounded-md px-4 py-2 my-4 ">
                   <p className="text-sm text-left font-semibold md:text-normal">What pages do you want to listen to today?</p>
                   <div className="flex items-center py-2 justify-between">
-                    <div className="text-left w-[15%]">
+                    <div className="text-left w-[20%]">
                       <Label className="text-sm">From</Label>
                       <Input
                         type="number"
@@ -374,7 +374,7 @@ export default function Home() {
                       />
                     </div>
                     <p className="mt-2">-</p>
-                    <div className="text-left w-[15%]">
+                    <div className="text-left w-[20%]">
                       <Label className="text-sm">To</Label>
                       <Input
                         type="number"
@@ -389,7 +389,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="text-center w-[60%]">
+              <div className="text-center w-full lg:w-[60%]">
                 {pdfData && (
                   <div className="w-full mt-4">
                     <div className="flex w-full justify-between border rounded-md p-4">

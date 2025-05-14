@@ -75,28 +75,33 @@ export default function Subscription() {
 
       {!isClient && <LoadingFallback />}
 
-      <div className="pt-28 flex justify-center items-center">
+      <div className="pt-28 px-4 md:px-0 flex justify-center items-center">
         {isPaid ? (
-          <Card className="w-[40vw] text-center">
+          <Card className="w-full md:w-[600px] lg:w-[40vw] text-center">
             <CardContent className="pt-6 pb-4 flex flex-col items-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <div className="mb-4 flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle2 className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
               </div>
-              <h2 className="text-2xl font-bold text-green-700">Payment Successful!</h2>
-              <p className="text-muted-foreground mt-2">
+              <h2 className="text-xl md:text-2xl font-bold text-green-700">Payment Successful!</h2>
+              <p className="text-sm md:text-base text-muted-foreground mt-2 px-4 md:px-0">
                 Your payment of <span className="font-medium">2.00 SOL</span> has been processed successfully.
               </p>
-              <p className="text-muted-foreground mt-1">You now have full access to our conversion service.</p>
+              <p className="text-sm md:text-base text-muted-foreground mt-1">You now have full access to our conversion service.</p>
 
-              <div className="mt-3 text-green-600">
+              <div className="mt-3 text-green-600 text-sm md:text-base">
                 ✅ Tx ID:{' '}
-                <a href={`https://explorer.solana.com/tx/${txId}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="underline">
+                <a
+                  href={`https://explorer.solana.com/tx/${txId}?cluster=devnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline break-all md:break-normal"
+                >
                   {txId.slice(0, 6)}...{txId.slice(-6)}
                 </a>
               </div>
             </CardContent>
             <CardFooter className="flex justify-center pb-6">
-              <Button asChild>
+              <Button asChild className="text-sm md:text-base">
                 <Link href="/convert-to-speech">
                   Continue to Library <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -104,21 +109,21 @@ export default function Subscription() {
             </CardFooter>
           </Card>
         ) : (
-          <Card className="w-[40vw] text-center">
+          <Card className="w-full md:w-[600px] lg:w-[40vw] text-center">
             <CardHeader>
               <CardTitle>
-                <h2 className="text-4xl font-light">Subscribe to Convert</h2>
-                <p className="font-light text-sm w-1/2 text-center mx-auto">
+                <h2 className="text-2xl md:text-4xl font-light">Subscribe to Convert</h2>
+                <p className="font-light text-xs md:text-sm w-full md:w-1/2 text-center mx-auto px-4 md:px-0">
                   Subscribe a token of 2 usd to use our service. You can make a payment through solana pay
                 </p>
               </CardTitle>
               <CardDescription> </CardDescription>
             </CardHeader>
-            <CardContent className="text-center w-full flex justify-center">
+            <CardContent className="text-center w-full flex justify-center px-4 md:px-6">
               <div>
-                <div className="mx-auto" ref={qrRef} />
-                <p className="mr-4 mb-4">or</p>
-                <Button onClick={handlePayment} loading={isPaying} loadingText="Please wait...">
+                <div className="mx-auto scale-75 md:scale-100" ref={qrRef} />
+                <p className="mr-4 mb-4 text-sm md:text-base">or</p>
+                <Button onClick={handlePayment} loading={isPaying} loadingText="Please wait..." className="text-sm md:text-base">
                   Pay with Solana Pay
                 </Button>
               </div>
