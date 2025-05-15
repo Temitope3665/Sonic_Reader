@@ -114,7 +114,7 @@ export default function Subscription() {
               <CardTitle>
                 <h2 className="text-2xl md:text-4xl font-light">Subscribe to Convert</h2>
                 <p className="font-light text-xs md:text-sm w-full md:w-1/2 text-center mx-auto px-4 md:px-0">
-                  Subscribe a token of 2 usd to use our service. You can make a payment through solana pay
+                  Subscribe a token of 2 sol to use our service. You can make a payment through solana pay
                 </p>
               </CardTitle>
               <CardDescription> </CardDescription>

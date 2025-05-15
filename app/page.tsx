@@ -53,8 +53,29 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <div className="bg-[#262626] h-[300px] p-4">
+
+              <div className="bg-[#ECE3DA] h-[300px] p-4">
                 <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">02.</p>
+                <div className="my-16 space-y-4">
+                  <Gift className="text-primary" size={24} strokeWidth={1} />
+
+                  <div>
+                    <p className="font-medium text-xl">Subscribe</p>
+                    <p className="font-light text-sm">
+                      Unlock the power to upload pdf, listen and engage — turning learning into rewarding and fun experience.
+                    </p>
+                  </div>
+                  <div className="flex space-x-2 text-sm items-center">
+                    <Link href={'/convert-to-speech'} className="flex space-x-2">
+                      <p className="font-extralight">Learn more</p>
+                      <MoveRight size={18} strokeWidth={1} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-[#262626] h-[300px] p-4">
+                <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">03.</p>
 
                 <div className="my-16 space-y-4">
                   <Upload className="text-[#B3B4AF]" size={24} strokeWidth={1} />
@@ -71,8 +92,9 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+
               <div className="bg-[#DFDBE5] h-[300px] p-4">
-                <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">03.</p>
+                <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">04.</p>
 
                 <div className="my-16 space-y-4">
                   <Headphones className="text-primary" size={24} strokeWidth={1} />
@@ -90,7 +112,7 @@ export default function Home() {
               </div>
 
               <div className="bg-[#262626] h-[300px] p-4">
-                <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">04.</p>
+                <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">05.</p>
 
                 <div className="my-16 space-y-4">
                   <Download className="text-[#B3B4AF]" size={24} strokeWidth={1} />
@@ -108,7 +130,7 @@ export default function Home() {
               </div>
 
               <div className="bg-[#ECE3DA] h-[300px] p-4">
-                <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">05.</p>
+                <p className="rounded-full w-8 h-8 bg-white text-black font-extralight flex items-center justify-center">06.</p>
                 <div className="my-16 space-y-4">
                   <Gift className="text-primary" size={24} strokeWidth={1} />
 
